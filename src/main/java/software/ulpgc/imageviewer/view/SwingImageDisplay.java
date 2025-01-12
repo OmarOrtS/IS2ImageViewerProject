@@ -1,4 +1,6 @@
-package software.ulpgc.imageviewer;
+package software.ulpgc.imageviewer.view;
+
+import software.ulpgc.imageviewer.model.Image;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -19,9 +21,7 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
     }
 
     @Override
-    public Image image() {
-        return image;
-    }
+    public Image image() {return image;}
 
     @Override
     public void paint(Graphics g) {
@@ -29,9 +29,9 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
         g.fillRect(0, 0, this.getWidth(), this.getHeight());
         Resizer resizer = new Resizer(new Dimension(this.getWidth(), this.getHeight()));
         Dimension resized = resizer.resize(new Dimension(bitmap.getWidth(), bitmap.getHeight()));
-        int x = (this.getWidth() - bitmap.getWidth()) / 2;
-        int y = (bitmap.getHeight() - bitmap.getHeight()) / 2;
-        g.drawImage(bitmap, x, y, null);
+        int x = (this.getWidth() - (int) resized.getWidth()) / 2;
+        int y = (this.getHeight() - (int) resized.getHeight()) / 2;
+        g.drawImage(bitmap, x, y, resized.width, resized.height, null);
     }
 
     public static class Resizer {
@@ -42,8 +42,19 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
         }
 
         public Dimension resize(Dimension dimension) {
-            return null;
+            double scale = Math.min(getWidthRatio(dimension.getWidth(),
+                    this.dimension.getWidth()), getHeightRatio(dimension.getHeight(), this.dimension.getHeight()));
+
+            return new Dimension(getNewWidth(scale), getNewHeight(scale));
         }
+
+        private int getNewHeight(double scale) { return (int) Math.round(this.dimension.getHeight() * scale);}
+
+        private int getNewWidth(double scale) { return (int) Math.round(this.dimension.getWidth() * scale);}
+
+        private static double getHeightRatio(double targetHeight, double originalHeight) { return targetHeight / originalHeight;}
+
+        private static double getWidthRatio(double targetWidth, double originalWidth) { return targetWidth / originalWidth;}
     }
 
     private BufferedImage load(String name) {

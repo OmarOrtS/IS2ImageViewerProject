@@ -1,4 +1,6 @@
-package software.ulpgc.imageviewer;
+package software.ulpgc.imageviewer.view;
+
+import software.ulpgc.imageviewer.control.Command;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,6 +1,6 @@
-package software.ulpgc.imageviewer;
+package software.ulpgc.imageviewer.control;
 
-import java.awt.*;
+import software.ulpgc.imageviewer.view.ImageDisplay;
 
 public class PreviousImageCommand implements Command {
     private final ImageDisplay imageDisplay;
