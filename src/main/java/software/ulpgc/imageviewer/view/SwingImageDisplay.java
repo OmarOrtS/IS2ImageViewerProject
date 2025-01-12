@@ -5,6 +5,8 @@ import software.ulpgc.imageviewer.model.Image;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +14,29 @@ import java.io.IOException;
 public class SwingImageDisplay extends JPanel implements ImageDisplay {
     private Image image;
     private BufferedImage bitmap;
+    private Runnable swipeLeftCallback;
+    private Runnable swipeRightCallback;
+    private int startPosition;
+
+    public SwingImageDisplay() {
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {startPosition = e.getX();}
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                int endPosition = e.getX();
+                if (isSwipeLeft(endPosition)) runIfNotNull(swipeLeftCallback);
+                else if (isSwipeRight(endPosition) ) runIfNotNull(swipeRightCallback);
+            }
+
+            private boolean isSwipeRight(int endPosition) {return endPosition - startPosition > 50;}
+
+            private void runIfNotNull(Runnable runnable) {runnable.run();}
+
+            private boolean isSwipeLeft(int endPosition) {return startPosition - endPosition > 50;}
+        });
+    }
 
     @Override
     public void show(Image image) {
@@ -22,6 +47,16 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
 
     @Override
     public Image image() {return image;}
+
+    @Override
+    public void onSwipeLeft(Runnable callback) {
+        this.swipeLeftCallback = callback;
+    }
+
+    @Override
+    public void onSwipeRight(Runnable callback) {
+        this.swipeRightCallback = callback;
+    }
 
     @Override
     public void paint(Graphics g) {

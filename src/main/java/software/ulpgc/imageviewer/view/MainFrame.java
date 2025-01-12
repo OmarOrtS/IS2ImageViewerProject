@@ -1,20 +1,17 @@
 package software.ulpgc.imageviewer.view;
 
-import software.ulpgc.imageviewer.control.Command;
+import software.ulpgc.imageviewer.presenter.ImagePresenter;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
 
 public class MainFrame extends JFrame {
     private ImageDisplay imageDisplay;
-    private final Map<String, Command> commands;
+    private final ImagePresenter presenter;
 
 
 
     public MainFrame() {
-        this.commands = new HashMap<>();
         setTitle("Image Viewer");
         setSize(Toolkit.getDefaultToolkit().getScreenSize());
         setLocationRelativeTo(null);
@@ -22,6 +19,7 @@ public class MainFrame extends JFrame {
         setLayout(new BorderLayout());
         add(createImageDisplay());
         add(createToolbar(), BorderLayout.SOUTH);
+        this.presenter = new ImagePresenter(imageDisplay);
     }
 
     private Component createToolbar() {
@@ -33,7 +31,7 @@ public class MainFrame extends JFrame {
 
     private Component createButton(String label) {
         JButton button = new JButton(label);
-        button.addActionListener(e -> commands.get(label).execute());
+        button.addActionListener(e -> presenter.commands().get(label).execute());
         return button;
     }
 
@@ -44,11 +42,9 @@ public class MainFrame extends JFrame {
     }
 
 
-    public void add(String name, Command command) {
-        commands.put(name, command);
-    }
-
     public ImageDisplay imageDisplay() {
         return imageDisplay;
     }
+
+    public ImagePresenter getPresenter() {return presenter;}
 }

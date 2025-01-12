@@ -13,7 +13,7 @@ public class Main {
         MainFrame frame = new MainFrame();
         Image image = new FileImageLoader(new File("src/main/resources")).load();
         frame.imageDisplay().show(image);
-        frame.add("<", new PreviousImageCommand(frame.imageDisplay()));
-        frame.add(">", new NextImageCommand(frame.imageDisplay()));
+        frame.getPresenter().add("<", new PreviousImageCommand(frame.imageDisplay()));
+        frame.getPresenter().add(">", new NextImageCommand(frame.imageDisplay()));
         frame.setVisible(true);
     }}
