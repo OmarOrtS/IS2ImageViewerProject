@@ -17,24 +17,43 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
     private Runnable swipeLeftCallback;
     private Runnable swipeRightCallback;
     private int startPosition;
+    private int dragOffset = 0;
 
     public SwingImageDisplay() {
         addMouseListener(new MouseAdapter() {
             @Override
-            public void mousePressed(MouseEvent e) {startPosition = e.getX();}
+            public void mousePressed(MouseEvent e) {
+                startPosition = e.getX();
+            }
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                int endPosition = e.getX();
-                if (isSwipeLeft(endPosition)) runIfNotNull(swipeLeftCallback);
-                else if (isSwipeRight(endPosition) ) runIfNotNull(swipeRightCallback);
+                if (Math.abs(dragOffset) > getWidth() / 3) {
+                    if (isSwipeLeft() && canSwipe(swipeLeftCallback)) swipeLeftCallback.run();
+                    else if (isSwipeRight() && canSwipe(swipeRightCallback)) swipeRightCallback.run();
+                }
+                dragOffset = 0;
+                repaint();
             }
 
-            private boolean isSwipeRight(int endPosition) {return endPosition - startPosition > 50;}
+            private boolean isSwipeRight() {
+                return dragOffset > 0;
+            }
 
-            private void runIfNotNull(Runnable runnable) {runnable.run();}
+            private boolean canSwipe(Runnable runnable) {return runnable != null;}
 
-            private boolean isSwipeLeft(int endPosition) {return startPosition - endPosition > 50;}
+            private boolean isSwipeLeft() {
+                return dragOffset < 0;
+            }
+        });
+
+        addMouseMotionListener(new MouseAdapter() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                dragOffset = e.getX() - startPosition;
+                repaint();
+            }
+
         });
     }
 
@@ -45,8 +64,11 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
         this.repaint();
     }
 
+
     @Override
-    public Image image() {return image;}
+    public Image image() {
+        return image;
+    }
 
     @Override
     public void onSwipeLeft(Runnable callback) {
@@ -62,12 +84,17 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
     public void paint(Graphics g) {
         g.setColor(Color.BLACK);
         g.fillRect(0, 0, this.getWidth(), this.getHeight());
+        if (bitmap == null) return;
+
         Resizer resizer = new Resizer(new Dimension(this.getWidth(), this.getHeight()));
         Dimension resized = resizer.resize(new Dimension(bitmap.getWidth(), bitmap.getHeight()));
-        int x = (this.getWidth() - (int) resized.getWidth()) / 2;
-        int y = (this.getHeight() - (int) resized.getHeight()) / 2;
-        g.drawImage(bitmap, x, y, resized.width, resized.height, null);
+
+        g.drawImage(bitmap, currentX(resized), currentY(resized), resized.width, resized.height, null);
     }
+
+    private int currentY(Dimension resized) {return (this.getHeight() - resized.height) / 2;}
+
+    private int currentX(Dimension resized) {return (this.getWidth() - resized.width) / 2 + this.dragOffset;}
 
     public static class Resizer {
         private final Dimension dimension;
@@ -77,19 +104,27 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
         }
 
         public Dimension resize(Dimension dimension) {
-            double scale = Math.min(getWidthRatio(dimension.getWidth(),
-                    this.dimension.getWidth()), getHeightRatio(dimension.getHeight(), this.dimension.getHeight()));
+            double scale = Math.min(getWidthRatio(dimension.getWidth(), this.dimension.getWidth()),
+                    getHeightRatio(dimension.getHeight(), this.dimension.getHeight()));
 
             return new Dimension(getNewWidth(scale), getNewHeight(scale));
         }
 
-        private int getNewHeight(double scale) { return (int) Math.round(this.dimension.getHeight() * scale);}
+        private int getNewHeight(double scale) {
+            return (int) Math.round(this.dimension.getHeight() * scale);
+        }
 
-        private int getNewWidth(double scale) { return (int) Math.round(this.dimension.getWidth() * scale);}
+        private int getNewWidth(double scale) {
+            return (int) Math.round(this.dimension.getWidth() * scale);
+        }
 
-        private static double getHeightRatio(double targetHeight, double originalHeight) { return targetHeight / originalHeight;}
+        private static double getHeightRatio(double targetHeight, double originalHeight) {
+            return targetHeight / originalHeight;
+        }
 
-        private static double getWidthRatio(double targetWidth, double originalWidth) { return targetWidth / originalWidth;}
+        private static double getWidthRatio(double targetWidth, double originalWidth) {
+            return targetWidth / originalWidth;
+        }
     }
 
     private BufferedImage load(String name) {
@@ -99,5 +134,5 @@ public class SwingImageDisplay extends JPanel implements ImageDisplay {
             throw new RuntimeException(e);
         }
     }
-
 }
+

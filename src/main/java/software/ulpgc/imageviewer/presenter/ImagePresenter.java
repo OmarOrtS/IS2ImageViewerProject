@@ -21,9 +21,10 @@ public class ImagePresenter {
         this.imageDisplay.onSwipeRight(this::previousImage);
     }
 
-    private void nextImage() {commands().get("<").execute();}
 
-    private void previousImage() {commands().get(">").execute();}
+    private void nextImage() {commands.get(">").execute();}
+
+    private void previousImage() {commands.get("<").execute();}
 
     public void add(String name, Command command) {commands.put(name, command);}
 

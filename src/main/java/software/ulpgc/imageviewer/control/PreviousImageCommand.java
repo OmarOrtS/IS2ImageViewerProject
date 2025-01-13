@@ -13,4 +13,5 @@ public class PreviousImageCommand implements Command {
     public void execute() {
         imageDisplay.show(imageDisplay.image().prev());
     }
+
 }
